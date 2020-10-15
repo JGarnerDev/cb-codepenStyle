@@ -26,7 +26,7 @@ class User {
     //   Add the user to users db collection, keep the id from database
     this.id = usersRef.push(this).getKey();
     //   Add the user to the current room's list of users with their id
-    roomCurrentUsersRef(this.currentRoom).child(this.id).push(this);
+    roomCurrentUsersRef(this.currentRoom).child(this.id).update(this);
   }
   logout() {
     usersRef.child(this.id).remove();
@@ -39,8 +39,12 @@ class User {
   changeRoom(room) {
     //   remove them from current room
     roomCurrentUsersRef(this.currentRoom).child(this.id).remove();
+    // redefine the user's current room property
+    this.currentRoom = room;
     //   add them to the desired room, creating it if it doesn't exist
-    roomCurrentUsersRef(room).child(this.id).push(this);
+    roomCurrentUsersRef(room).child(this.id).update(this);
+    // update the users collection with the new info
+    usersRef.child(this.id).update(this);
   }
 }
 
@@ -103,8 +107,15 @@ chatButton.addEventListener("click", (e) => {
   user.sendMessage(message);
 });
 
-user = new User("Jeff");
-
 setTimeout(() => {
-  user.changeRoom();
+  user = new User("Jeff");
 }, 2000);
+setTimeout(() => {
+  user.sendMessage("Sup");
+}, 4000);
+setTimeout(() => {
+  user.changeRoom("Butt Stuff");
+}, 6000);
+setTimeout(() => {
+  user.sendMessage("BIG UPS TO BUTT STUFF");
+}, 8000);
