@@ -15,7 +15,14 @@
       </form>
     </section>
     <section id="chat" class="hide" >
-      <h1>CHAT</h1>
+      <div id="chat-view">
+      <h1 id="chat-header"></h1>
+      <ul id="chat-messages"></ul>
+      <form id="chat-form">
+        <input id="chat-input" type="text" name="message"   />
+        <input id="chat-submit" type="submit" value="send"></input>
+      </form>
+    </div>
     </section>
 
     <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase-app.js"></script>
