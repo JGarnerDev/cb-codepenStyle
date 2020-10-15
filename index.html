@@ -4,27 +4,37 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.1/socket.io.js" integrity="sha512-AcZyhRP/tbAEsXCCGlziPun5iFvcSUpEz2jKkx0blkYKbxU81F+iq8FURwPn1sYFeksJ+sDDrI5XujsqSobWdQ==" crossorigin="anonymous"></script>
   </head>
+
+
   <body>
-    <section id="login">
+    <!-- Login form -->
+    <!-- <section id="login">
       <form id="login-form">
         <h1>Log in</h1>
         <input id="login-username" name="username" type="text" placeholder="username" />
         <input id="login-submit" type="submit" value="Login"></input>
       </form>
-    </section>
-    <section id="chat" class="hide" >
-      <div id="chat-view">
-      <h1 id="chat-header"></h1>
-      <ul id="chat-messages"></ul>
-      <form id="chat-form">
-        <input id="chat-input" type="text" name="message"   />
-        <input id="chat-submit" type="submit" value="send"></input>
-      </form>
-    </div>
-    </section>
+    </section> -->
+    <!--  -->
 
+    <!-- Chat View -->
+    <section id="chat" class="hide" >
+      <ul id="rooms"></ul>
+      <div id="chat-view">
+        <h1 id="chat-header"></h1>
+        <ul id="chat-messages"></ul>
+        <form id="chat-form">
+          <input id="chat-input" type="text" name="message"> </input>
+          <input id="chat-submit" type="submit" value="send" > </input>
+        </form>
+      </div>
+      <ul id="users"></ul>
+    </section>
+    <!--  -->
+
+    <!-- Required CDN -->
     <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase-database.js"></script>
     <script
@@ -32,6 +42,11 @@
       integrity="sha512-rV0Q1QWodkoLjts/qP2XHtjvUPTmN46k4eH0lzOR3mDui8a0YnL/uqydipXA9mQ2wG6J4imL0BO6/26rcFho7Q=="
       crossorigin="anonymous"
     ></script>
+    
     <script src="./app.js"></script>
+
+    
+    
+    <!--  -->
   </body>
 </html>
