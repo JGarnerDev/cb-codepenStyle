@@ -45,8 +45,31 @@ const roomUsersRef = (room) => {
   return db.ref(`/rooms/${room}/users`);
 };
 
+const addUserToRoom = (user, room) => {
+  roomUsersRef(room).child(user.id).update(user);
+};
+const removeUserFromRoom = (user) => {
+  roomUsersRef(user.currentRoom).child(user.id).remove();
+};
+
 //      There will be another collection just for the users
 const usersRef = db.ref("/users");
+
+const updateUserData = (user) => {
+  usersRef.child(user.id).update(user);
+};
+const removeUserByID = (id) => {
+  usersRef.child(id).remove();
+};
+
+async function findUserBySocketID(id, cb) {
+  usersRef
+    .orderByChild("socket")
+    .equalTo(id)
+    .on("child_added", function (snapshot) {
+      cb(snapshot.val(), snapshot.key);
+    });
+}
 
 // Socket setup (binding the socket to this server)
 var io = socket(server);
@@ -59,17 +82,20 @@ io.on("connection", (socket) => {
     const user = { name, currentRoom: "Main Room" };
     // Establish the socket id
     const socketID = socket.id;
+    // Add socket id to user object
+    user.socket = socketID;
     // add user to the user's collection, retain their id
     user.id = usersRef.push(user).getKey();
     // Send the information back to the unique socket connection
-    io.to(socketID).emit("USER_DATA", user);
+    io.to(socketID).emit("USER_LOGIN", user);
+    // Add the user to the room's current users collection
+    addUserToRoom(user, user.currentRoom);
   });
-
   // =============== //
 
   // == Messaging == //
 
-  //   When the message even occurs, we take the data
+  //   When the message event occurs, we take the data
   socket.on("message", ({ user, room, message }) => {
     //   ...push the message to the db under the room's message collection...
     roomMessagesRef(room).push({ user, message });
@@ -77,4 +103,26 @@ io.on("connection", (socket) => {
     io.sockets.emit("message", { user, room, message });
   });
   // =============== //
+
+  // == Room changing == //
+
+  //   When the change room event occurs, we take the data
+  socket.on("changeRoom", ({ user, destination }) => {
+    // remove the user from their current room
+    removeUserFromRoom(user);
+    // Update the user object
+    user.currentRoom = destination;
+    // add user to destination's user collection
+    addUserToRoom(user, destination);
+    // update the user's collection to relfect the change
+    updateUserData(user);
+  });
+  // =============== //
+  socket.on("disconnect", async function () {
+    findUserBySocketID(socket.id, (user, key) => {
+      user.id = key;
+      removeUserFromRoom(user);
+      removeUserByID(key);
+    });
+  });
 });

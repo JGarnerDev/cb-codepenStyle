@@ -16,9 +16,19 @@ const getEleById = (id) => {
 
 // == The User Schema == //
 
+class User {
+  constructor({ id, name, currentRoom }) {
+    this.id = id;
+    this.name = name;
+    this.currentRoom = currentRoom;
+  }
+}
+
 // ===================== //
 
 // == Setup == //
+
+let user;
 
 const serverURL = "http://127.0.0.1:3001/";
 
@@ -35,6 +45,7 @@ const loginInput = getEleById("login-input"),
 // === For the Chat View
 const roomsList = getEleById("rooms"),
   usersList = getEleById("users"),
+  roomChangeButton = getEleById("roomChange"),
   chatPage = getEleById("chat"),
   chatHeader = getEleById("chat-header"),
   chatMessages = getEleById("chat-messages"),
@@ -65,6 +76,12 @@ sendMessageButton.addEventListener("click", (e) => {
     message: messageInput.value,
   });
 });
+roomChangeButton.addEventListener("click", (e) => {
+  e.preventDefault();
+  const destination = "Other ROOM";
+  socket.emit("changeRoom", { user, destination });
+});
+
 // =========================
 
 // =========== //
@@ -75,6 +92,6 @@ socket.on("message", (data) => {
   chatMessages.innerHTML += formatMessageToHTML(data);
 });
 
-socket.on("USER_DATA", (data) => {
-  console.log(data);
+socket.on("USER_LOGIN", (data) => {
+  user = new User(data);
 });
