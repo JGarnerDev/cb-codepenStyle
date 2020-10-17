@@ -71,8 +71,8 @@ loginButton.addEventListener("click", (e) => {
 sendMessageButton.addEventListener("click", (e) => {
   e.preventDefault();
   socket.emit("message", {
-    user: "George",
-    room: "Main Room",
+    user: user.name,
+    room: user.room,
     message: messageInput.value,
   });
 });

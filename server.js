@@ -48,11 +48,12 @@ const roomUsersRef = (room) => {
 const addUserToRoom = (user, room) => {
   roomUsersRef(room).child(user.id).update(user);
 };
+
 const removeUserFromRoom = (user) => {
   roomUsersRef(user.currentRoom).child(user.id).remove();
 };
 
-//      There will be another collection just for the users
+//    Reference for users
 const usersRef = db.ref("/users");
 
 const updateUserData = (user) => {
@@ -62,11 +63,13 @@ const removeUserByID = (id) => {
   usersRef.child(id).remove();
 };
 
-async function findUserBySocketID(id, cb) {
+function findUserBySocketID(id, cb) {
+  // Query the users collection for the socket value
   usersRef
     .orderByChild("socket")
     .equalTo(id)
     .on("child_added", function (snapshot) {
+      // callback with the key and the value associated
       cb(snapshot.val(), snapshot.key);
     });
 }
@@ -118,11 +121,18 @@ io.on("connection", (socket) => {
     updateUserData(user);
   });
   // =============== //
-  socket.on("disconnect", async function () {
+
+  // == Disconnection == //
+  socket.on("disconnect", function () {
+    // We find the user by their socket value
     findUserBySocketID(socket.id, (user, key) => {
+      // since the user returned by the callback is what is found at the db key, we add this value for convenience...
       user.id = key;
+      // ...to remove them easily from the room's user collection
       removeUserFromRoom(user);
+      // and then to remove them from the global users collection
       removeUserByID(key);
     });
   });
+  // =================== //
 });
