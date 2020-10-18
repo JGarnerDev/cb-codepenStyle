@@ -99,6 +99,12 @@ const sendRoomMessages = (room) => {
     io.to(room).emit("roomMessages", messages);
   });
 };
+const sendRooms = (socket) => {
+  roomsRef.on("value", (snapshot) => {
+    rooms = Object.keys(snapshot.val());
+    io.to(socket.id).emit("rooms", rooms);
+  });
+};
 
 // Finding user by their socket id, used for removing user from db when they navigate elsewhere
 function findUserBySocketID(id, cb) {
@@ -139,6 +145,8 @@ io.on("connection", (socket) => {
     sendRoomMessages(user.currentRoom);
     //
     sendRoomUsersList(socket, user.currentRoom);
+    //
+    sendRooms(socket);
   });
   // =============== //
 

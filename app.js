@@ -42,6 +42,15 @@ formatRoommateInfoToHTML = ({ name }) => {
   return li;
 };
 
+formatRoomInfoToHTML = (name) => {
+  let li = document.createElement("li");
+  li.setAttribute("class", "room");
+  let nameText = document.createElement("p");
+  nameText.innerText = name;
+  li.appendChild(nameText);
+  return li;
+};
+
 // ======================= //
 
 // == The User Schema == //
@@ -74,7 +83,8 @@ const loginInput = getEleById("login-input"),
 // =========================
 
 // === For the Chat View
-let roomsList = getEleById("rooms"),
+let rooms = getEleById("rooms"),
+  roomsList = getEleByClass("roomsList"),
   allUsers = getEleById("allUsers"),
   roomUsers = getEleById("roomUsers"),
   userList = getEleByClass("userList"),
@@ -150,6 +160,17 @@ socket.on("roomUsers", (data) => {
     newUserList.appendChild(userLI);
   });
   roomUsers.replaceChild(newUserList, userList[1]);
+});
+
+socket.on("rooms", (data) => {
+  let newRoomsList = document.createElement("ul");
+  newRoomsList.setAttribute("class", "roomsList");
+  [...data].forEach((room) => {
+    let roomLI = formatRoomInfoToHTML(room);
+    newRoomsList.appendChild(roomLI);
+  });
+
+  rooms.replaceChild(newRoomsList, roomsList[0]);
 });
 
 socket.on("roomMessages", (data) => {
