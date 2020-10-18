@@ -24,26 +24,33 @@
       <ul id="rooms"></ul>
       <div id="chat-view">
         <h1 id="chat-header"></h1>
-        <ul id="chat-messages"></ul>
+        <div id="chat-messages">
+          <ul class="chat-messages-currentRoom"></ul>
+        </div>
         <form id="chat-form">
           <input id="chat-input" type="text" name="message"> </input>
           <input id="chat-submit" type="submit" value="send" > </input>
         </form>
        <button id="roomChange">Change Rooms</button>
-     
       </div>
-      <ul id="users"></ul>
+      <div id='users'>
+        <h2>All users</h2>
+        <div id="allUsers">
+          <ul class="userList"></ul>
+        </div>
+        <h2>Users in Room</h2>
+        <div id="roomUsers">
+          <ul class="userList"></ul>
+        </div>
+      </div>
+      
     </section>
     <!--  -->
 
     <!-- Required CDN -->
     <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase-database.js"></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/node-uuid/1.4.8/uuid.min.js"
-      integrity="sha512-rV0Q1QWodkoLjts/qP2XHtjvUPTmN46k4eH0lzOR3mDui8a0YnL/uqydipXA9mQ2wG6J4imL0BO6/26rcFho7Q=="
-      crossorigin="anonymous"
-    ></script>
+   
     
     <script src="./app.js"></script>
 

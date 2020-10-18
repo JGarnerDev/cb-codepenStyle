@@ -37,19 +37,23 @@ const db = firebase.database();
 
 //      Reference for rooms
 const roomsRef = db.ref("/rooms");
-//      We will support multiple rooms, so the reference will be made dynamically
+
+//      The reference for messages in a room
 const roomMessagesRef = (room) => {
   return db.ref(`/rooms/${room}/messages`);
 };
+//      The reference for users in a room
 const roomUsersRef = (room) => {
   return db.ref(`/rooms/${room}/users`);
 };
 
-const addUserToRoom = (user, room) => {
+const addUserToRoom = (socket, user, room) => {
+  socket.join(room);
   roomUsersRef(room).child(user.id).update(user);
 };
 
-const removeUserFromRoom = (user) => {
+const removeUserFromRoom = (socket, user) => {
+  socket.leave(user.currentRoom);
   roomUsersRef(user.currentRoom).child(user.id).remove();
 };
 
@@ -63,6 +67,40 @@ const removeUserByID = (id) => {
   usersRef.child(id).remove();
 };
 
+const sendAllUsersList = () => {
+  usersRef.on("value", (snapshot) => {
+    if (!snapshot.val()) {
+      return;
+    }
+    users = Object.values(snapshot.val());
+    io.emit("allUsers", users);
+  });
+};
+
+const sendRoomUsersList = (socket, room) => {
+  roomUsersRef(room).on("value", (snapshot) => {
+    if (!snapshot.val()) {
+      return;
+    }
+    users = Object.values(snapshot.val());
+    io.to(socket.id).emit("roomUsers", users);
+  });
+};
+
+// Messages
+
+const sendRoomMessages = (room) => {
+  roomMessagesRef(room).on("value", (snapshot) => {
+    if (!snapshot.val()) {
+      io.to(room).emit("roomMessages", []);
+      return;
+    }
+    messages = Object.values(snapshot.val());
+    io.to(room).emit("roomMessages", messages);
+  });
+};
+
+// Finding user by their socket id, used for removing user from db when they navigate elsewhere
 function findUserBySocketID(id, cb) {
   // Query the users collection for the socket value
   usersRef
@@ -79,8 +117,12 @@ var io = socket(server);
 
 // Socket events, beginning with a client connection (someone making a request to the server by going to the website)
 io.on("connection", (socket) => {
+  // Maintain a list of users
+  let users = [];
   // == Logging in == //
   socket.on("login", (name) => {
+    // Get a list of the current users
+    sendAllUsersList();
     // Apply default properties to the user
     const user = { name, currentRoom: "Main Room" };
     // Establish the socket id
@@ -92,18 +134,20 @@ io.on("connection", (socket) => {
     // Send the information back to the unique socket connection
     io.to(socketID).emit("USER_LOGIN", user);
     // Add the user to the room's current users collection
-    addUserToRoom(user, user.currentRoom);
+    addUserToRoom(socket, user, user.currentRoom);
+    //
+    sendRoomMessages(user.currentRoom);
+    //
+    sendRoomUsersList(socket, user.currentRoom);
   });
   // =============== //
 
   // == Messaging == //
 
   //   When the message event occurs, we take the data
-  socket.on("message", ({ user, room, message }) => {
+  socket.on("send", ({ user, room, message }) => {
     //   ...push the message to the db under the room's message collection...
     roomMessagesRef(room).push({ user, message });
-    //   ...and emit a message event to all other sockets containing that data
-    io.sockets.emit("message", { user, room, message });
   });
   // =============== //
 
@@ -112,13 +156,17 @@ io.on("connection", (socket) => {
   //   When the change room event occurs, we take the data
   socket.on("changeRoom", ({ user, destination }) => {
     // remove the user from their current room
-    removeUserFromRoom(user);
+    removeUserFromRoom(socket, user);
     // Update the user object
     user.currentRoom = destination;
     // add user to destination's user collection
-    addUserToRoom(user, destination);
+    addUserToRoom(socket, user, destination);
     // update the user's collection to relfect the change
     updateUserData(user);
+    //
+
+    sendRoomMessages(user.currentRoom);
+    sendRoomUsersList(socket, user.currentRoom);
   });
   // =============== //
 
@@ -129,9 +177,10 @@ io.on("connection", (socket) => {
       // since the user returned by the callback is what is found at the db key, we add this value for convenience...
       user.id = key;
       // ...to remove them easily from the room's user collection
-      removeUserFromRoom(user);
-      // and then to remove them from the global users collection
+      removeUserFromRoom(socket, user);
+      // then to remove them from the global users collection
       removeUserByID(key);
+      //
     });
   });
   // =================== //

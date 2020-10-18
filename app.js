@@ -8,9 +8,39 @@ const getEleById = (id) => {
     return document.getElementsByClassName(className);
   },
   // Creating elements
+  //    - Messages
   formatMessageToHTML = ({ user, message }) => {
-    return `<div class="message"><p class="message-username">${user}</p><p class="message-text">${message}</p></div>`;
+    let li = document.createElement("li");
+    li.setAttribute("class", "message");
+    let nameText = document.createElement("p");
+    nameText.innerText = user;
+    let messageText = document.createElement("p");
+    messageText.innerText = message;
+    li.appendChild(nameText);
+    li.appendChild(messageText);
+    return li;
+  },
+  //    - Users (in the user list)
+  formatUserInfoToHTML = ({ name, currentRoom }) => {
+    let li = document.createElement("li");
+    li.setAttribute("class", "user");
+    let nameText = document.createElement("p");
+    nameText.innerText = name;
+    let roomText = document.createElement("p");
+    roomText.innerText = currentRoom;
+    li.appendChild(nameText);
+    li.appendChild(roomText);
+    return li;
   };
+//    - Users (in the user list)
+formatRoommateInfoToHTML = ({ name }) => {
+  let li = document.createElement("li");
+  li.setAttribute("class", "user");
+  let nameText = document.createElement("p");
+  nameText.innerText = name;
+  li.appendChild(nameText);
+  return li;
+};
 
 // ======================= //
 
@@ -29,6 +59,7 @@ class User {
 // == Setup == //
 
 let user;
+let users;
 
 const serverURL = "http://127.0.0.1:3001/";
 
@@ -43,12 +74,15 @@ const loginInput = getEleById("login-input"),
 // =========================
 
 // === For the Chat View
-const roomsList = getEleById("rooms"),
-  usersList = getEleById("users"),
+let roomsList = getEleById("rooms"),
+  allUsers = getEleById("allUsers"),
+  roomUsers = getEleById("roomUsers"),
+  userList = getEleByClass("userList"),
   roomChangeButton = getEleById("roomChange"),
   chatPage = getEleById("chat"),
   chatHeader = getEleById("chat-header"),
-  chatMessages = getEleById("chat-messages"),
+  chatMessageBox = getEleById("chat-messages"),
+  chatMessages = getEleByClass("chat-messages-currentRoom"),
   messageInput = getEleById("chat-input"),
   sendMessageButton = getEleById("chat-submit");
 //  =========================
@@ -70,16 +104,18 @@ loginButton.addEventListener("click", (e) => {
 // the 'send' button takes the value of the message input, and emits it via socket as a message event
 sendMessageButton.addEventListener("click", (e) => {
   e.preventDefault();
-  socket.emit("message", {
+  socket.emit("send", {
     user: user.name,
-    room: user.room,
+    room: user.currentRoom,
     message: messageInput.value,
   });
 });
+
 roomChangeButton.addEventListener("click", (e) => {
   e.preventDefault();
   const destination = "Other ROOM";
   socket.emit("changeRoom", { user, destination });
+  user.currentRoom = destination;
 });
 
 // =========================
@@ -89,9 +125,39 @@ roomChangeButton.addEventListener("click", (e) => {
 // == Socket Events == //
 
 socket.on("message", (data) => {
-  chatMessages.innerHTML += formatMessageToHTML(data);
+  chatMessages[0].appendChild(formatMessageToHTML(data));
 });
 
 socket.on("USER_LOGIN", (data) => {
   user = new User(data);
+});
+
+socket.on("allUsers", (data) => {
+  let newUserList = document.createElement("ul");
+  newUserList.setAttribute("class", "userList");
+  [...data].forEach((user) => {
+    let userLI = formatUserInfoToHTML(user);
+    newUserList.appendChild(userLI);
+  });
+  allUsers.replaceChild(newUserList, userList[0]);
+});
+
+socket.on("roomUsers", (data) => {
+  let newUserList = document.createElement("ul");
+  newUserList.setAttribute("class", "userList");
+  [...data].forEach((user) => {
+    let userLI = formatRoommateInfoToHTML(user);
+    newUserList.appendChild(userLI);
+  });
+  roomUsers.replaceChild(newUserList, userList[1]);
+});
+
+socket.on("roomMessages", (data) => {
+  let newChatMessages = document.createElement("ul");
+  newChatMessages.setAttribute("class", "chat-messages-currentRoom");
+  [...data].forEach((message) => {
+    let messageLI = formatMessageToHTML(message);
+    newChatMessages.appendChild(messageLI);
+  });
+  chatMessageBox.replaceChild(newChatMessages, chatMessages[0]);
 });
