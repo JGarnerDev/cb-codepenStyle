@@ -73,6 +73,10 @@ const sendAllUsersList = () => {
       return;
     }
     users = Object.values(snapshot.val());
+    users.forEach((user) => {
+      delete user.id;
+      delete user.socket;
+    });
     io.emit("allUsers", users);
   });
 };
@@ -83,6 +87,11 @@ const sendRoomUsersList = (socket, room) => {
       return;
     }
     users = Object.values(snapshot.val());
+    users.forEach((user) => {
+      delete user.id;
+      delete user.socket;
+      delete user.currentRoom;
+    });
     io.to(socket.id).emit("roomUsers", users);
   });
 };
