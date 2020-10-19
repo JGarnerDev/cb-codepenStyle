@@ -99,7 +99,10 @@ const createAndReplaceUL = (targetUlParentClass, data) => {
   });
   getEleByClass(targetUlParentClass)[0].replaceChild(newList, oldList);
 };
+
 // ====================== //
+
+// == Schemas == //
 
 /**
  * A model for our client user object
@@ -117,14 +120,20 @@ class User {
   }
 }
 
+// ============= //
+
+// == The Business == //
+// https://www.youtube.com/watch?v=6vTn8qUYHEw
+
+// Setup
 let user;
 
 const serverURL = "http://127.0.0.1:3001/";
 
-// Establishing bi-direcitonal client connection to server
+//    Establishing bi-direcitonal client connection to server
 const socket = io.connect(serverURL);
 
-// Querying elements for event and property listening
+//    Querying elements for event and property listening
 const loginInput = getEleById("login-input"),
   loginButton = getEleById("login-button"),
   roomChangeButton = getEleById("roomChange"),
@@ -132,7 +141,7 @@ const loginInput = getEleById("login-input"),
   messageInput = getEleById("chat-input"),
   sendMessageButton = getEleById("chat-submit");
 
-// For each of these buttons...
+//    For each of these buttons...
 [loginButton, sendMessageButton, roomChangeButton].forEach((button, i) => {
   const fn = [
     () => {
@@ -152,20 +161,23 @@ const loginInput = getEleById("login-input"),
       user.currentRoom = destination;
     },
   ];
-  // ...add the corresponding onClick function
+  //    ...add the corresponding onClick function
   addClickListener(button, fn[i]);
 });
-// When the server confirms that the user is added to the db, the global user variable is assigned as a new User object with the response data
+
+// Socket events
+
+//    When the server confirms that the user is added to the db, the global user variable is assigned as a new User object with the response data
 socket.on("USER_LOGIN", (data) => {
   user = new User(data);
 });
 
-// When the server has an updated list of all users currently connected, replace the list
+//    When the server has an updated list of all users currently connected, replace the list
 socket.on("allUsers", (data) => {
   createAndReplaceUL("all-users-list", data);
 });
 
-// When the server has an updated list of rooms currently active, replace the list
+//    When the server has an updated list of rooms currently active, replace the list
 socket.on("rooms", (data) => {
   if (typeof data[0] === "string") {
     data = data[0];
@@ -174,12 +186,14 @@ socket.on("rooms", (data) => {
   createAndReplaceUL("rooms-list", data);
 });
 
-// When the server has an updated list of users currently active in the occupied room, replace the list
+//    When the server has an updated list of users currently active in the occupied room, replace the list
 socket.on("roomUsers", (data) => {
   createAndReplaceUL("room-users-list", data);
 });
 
-// When the server has an updated list of messages in the currently active room, replace the list
+//    When the server has an updated list of messages in the currently active room, replace the list
 socket.on("roomMessages", (data) => {
   createAndReplaceUL("chat-messages-list", data);
 });
+
+// ================== //
