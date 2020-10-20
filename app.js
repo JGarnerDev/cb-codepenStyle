@@ -134,8 +134,10 @@ const serverURL = "http://127.0.0.1:3001/";
 const socket = io.connect(serverURL);
 
 //    Querying elements for event and property listening
-const loginInput = getEleById("login-input"),
+const loginSection = getEleById("login"),
+  loginInput = getEleById("login-input"),
   loginButton = getEleById("login-button"),
+  chatSection = getEleById("chat"),
   roomChangeButton = getEleById("roomChange"),
   chatHeader = getEleById("chat-header"),
   messageInput = getEleById("chat-input"),
@@ -165,11 +167,21 @@ const loginInput = getEleById("login-input"),
   addClickListener(button, fn[i]);
 });
 
+loginInput.addEventListener("input", () => {
+  if (loginInput.value !== "") {
+    loginButton.id = "login-button-alert";
+  } else {
+    loginButton.id = "login-button";
+  }
+});
+
 // Socket events
 
 //    When the server confirms that the user is added to the db, the global user variable is assigned as a new User object with the response data
 socket.on("USER_LOGIN", (data) => {
   user = new User(data);
+  loginSection.remove();
+  chatSection.classList.remove("hide");
 });
 
 //    When the server has an updated list of all users currently connected, replace the list

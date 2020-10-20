@@ -4,26 +4,51 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.1/socket.io.js" integrity="sha512-AcZyhRP/tbAEsXCCGlziPun5iFvcSUpEz2jKkx0blkYKbxU81F+iq8FURwPn1sYFeksJ+sDDrI5XujsqSobWdQ==" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="style.css" />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.1/socket.io.js"
+      integrity="sha512-AcZyhRP/tbAEsXCCGlziPun5iFvcSUpEz2jKkx0blkYKbxU81F+iq8FURwPn1sYFeksJ+sDDrI5XujsqSobWdQ=="
+      crossorigin="anonymous"
+    ></script>
   </head>
-
 
   <body>
     <!-- Login form -->
     <section id="login">
+      <div id="logo"></div>
       <form id="login-form">
-        <h1>Log in</h1>
-        <input id="login-input" name="username" type="text" placeholder="username" />
-        <input id="login-button" type="submit" value="Login"></input>
+        <input
+          id="login-input"
+          name="username"
+          type="text"
+          onkeyup="this.setAttribute('value', this.value);"
+          value=""
+          required
+        />
+        <label for="username" class="input-label">
+          <span>Pick a user name</span>
+        </label>
+        <input id="login-button" type="submit" value="Login" />
       </form>
     </section>
     <!--  -->
 
     <!-- Chat View -->
-    <section id="chat" class="hide" >
+    <section id="chat" class="hide">
       <div class="rooms-list">
         <h2>Rooms</h2>
         <ul class="rooms"></ul>
+      </div>
+
+      <div id="users">
+        <h2>Users in Room</h2>
+        <div class="room-users-list">
+          <ul class="users"></ul>
+        </div>
+        <h2>All users</h2>
+        <div class="all-users-list">
+          <ul class="users"></ul>
+        </div>
       </div>
       <div id="chat-view">
         <h1 id="chat-header"></h1>
@@ -31,22 +56,11 @@
           <ul class="chat-messages"></ul>
         </div>
         <form id="chat-form">
-          <input id="chat-input" type="text" name="message"> </input>
-          <input id="chat-submit" type="submit" value="send" > </input>
+          <input id="chat-input" type="text" name="message" />
+          <input id="chat-submit" type="submit" value="send" />
         </form>
-       <button id="roomChange">Change Rooms</button>
+        <button id="roomChange">Change Rooms</button>
       </div>
-      <div id='users'>
-        <h2>All users</h2>
-        <div class="all-users-list">
-          <ul class="userList"></ul>
-        </div>
-        <h2>Users in Room</h2>
-        <div class="room-users-list">
-          <ul class="users"></ul>
-        </div>
-      </div>
-      
     </section>
     <!--  -->
 
@@ -55,8 +69,6 @@
     <script src="https://www.gstatic.com/firebasejs/7.23.0/firebase-database.js"></script>
     <script src="./app.js"></script>
 
-    
-    
     <!--  -->
   </body>
 </html>
